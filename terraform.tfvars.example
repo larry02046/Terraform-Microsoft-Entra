@@ -1,4 +1,4 @@
-tenant_id          = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+tenant_id          = "x37378604-3ad9-428b-b140-1811f5adeabc"
 group_display_name = "APP-Sales-Readers"
 group_description  = "Readers for Sales app (managed by Terraform)"
 
