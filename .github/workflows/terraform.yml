@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TF_IN_AUTOMATION: "true"
-      # Pass tenant via env or tfvars; keep client_id/secret out (OIDC is secretless).
+      # Pass tenant via env or tfvars; keep client_id/secret out (OIDC is secretless)
       TF_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }} # optional: or hardcode in tfvars
     steps:
       - name: Checkout
