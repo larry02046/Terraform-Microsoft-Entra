@@ -6,7 +6,7 @@ resource "azuread_group" "id_engineers" {
   description       = "Engineering group for identity team (${var.environment})."
 }
 
-# Example 2: An application + service principal.
+# Example 2: An application + service principal...
 resource "azuread_application" "sample_app" {
   display_name = "sample-app-${var.environment}"
   owners       = [] # optionally add owners by objectId
