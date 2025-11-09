@@ -6,7 +6,7 @@ resource "azuread_group" "tf_example" {
   prevent_duplicate_names = true
 
 }
-
+#
 output "group_object_id" {
   value = azuread_group.tf_example.object_id
 }
