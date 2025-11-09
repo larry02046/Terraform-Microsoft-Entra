@@ -1,26 +1,27 @@
-name: Terraform - Entra ID Group
+name: Terraform - Entra ID
 
 on:
   push:
     branches: [ "Dev" ]
+    paths:
+      - "terraform/**"
+  pull_request:
+    branches: [ "Dev" ]
+    paths:
+      - "terraform/**"
   workflow_dispatch:
 
 permissions:
-  id-token: write   # REQUIRED for OIDC
+  id-token: write
   contents: read
 
-env:
-  # Required by Terraform Azure providers & backend when using OIDC
-  AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}       # set in Repo or Org Variables
-  AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}       # the App Registration (SP) clientId
-  AZURE_SUBSCRIPTION_ID: ${{ vars.ARM_SUBSCRIPTION_ID }} # needed for azurerm backend
-  AZURE_USE_OIDC: true
-
 jobs:
-  plan-apply:
+  tf:
     runs-on: ubuntu-latest
-    environment: Dev   # must match your Federated Credential subject if you used environment
-
+    env:
+      TF_IN_AUTOMATION: "true"
+      # Pass tenant via env or tfvars; keep client_id/secret out (OIDC is secretless)
+      TF_VAR_tenant_id: ${{ secrets.AZURE_TENANT_ID }} # optional: or hardcode in tfvars
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,18 +29,36 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.7.5
+          terraform_version: 1.8.5
+
+      - name: Azure OIDC Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          # subscription-id is NOT required for Entra-only operations
+
+      # (Optional) Print whoami to confirm token context
+      - name: Show Entra context
+        run: |
+          az account show || true
+          az ad signed-in-user show || true
 
       - name: Terraform Init
-        run: terraform init
+        working-directory: terraform
+        run: |
+          terraform init
 
       - name: Terraform Validate
-        run: terraform validate -no-color
+        working-directory: terraform
+        run: terraform validate
 
       - name: Terraform Plan
-        run: terraform plan -no-color -input=false -var-file="terraform.tfvars"
+        working-directory: terraform
+        run: terraform plan -var-file="../env/dev.tfvars"
 
-      # Optional: protect apply with env approvals in GitHub
+      # Apply only on dev pushes
       - name: Terraform Apply
         if: github.ref == 'refs/heads/dev'
-        run: terraform apply -auto-approve -input=false -var-file="terraform.tfvars"
+        working-directory: terraform
+        run: terraform apply -auto-approve -var-file="../env/dev.tfvars"
