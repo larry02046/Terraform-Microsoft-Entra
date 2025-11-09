@@ -1,4 +1,4 @@
-# Example 1: A group
+# Example 1: A group.
 resource "azuread_group" "id_engineers" {
   display_name      = "ID Engineers - ${var.environment}"
   mail_enabled      = false
