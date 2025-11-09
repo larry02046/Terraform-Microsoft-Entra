@@ -22,3 +22,14 @@ variable "environment" {
   type        = string
   default     = "dev"
 }
+
+variable "group_display_name" {
+  description = "Group display name"
+  type        = string
+}
+
+variable "group_description" {
+  description = "Group Description"
+  type        = string
+  default     = "Managed by Terraform"
+}
